@@ -10,12 +10,12 @@
   --error-soft: #fde8e7;
   --shadow: 0 10px 30px rgba(20, 30, 50, 0.1), 0 2px 6px rgba(20, 30, 50, 0.06);
 
-  color-scheme: light dark;
+  color-scheme: light;
   font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg: #0f1216;
     --card: #1a1f26;
     --text: #e8ecf1;
@@ -26,7 +26,22 @@
     --error: #ff7b72;
     --error-soft: #3a1d1c;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
   }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1216;
+  --card: #1a1f26;
+  --text: #e8ecf1;
+  --muted: #9aa5b1;
+  --line: #2a313a;
+  --accent: #7aa2ff;
+  --accent-soft: #232d42;
+  --error: #ff7b72;
+  --error-soft: #3a1d1c;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

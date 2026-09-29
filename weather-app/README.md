@@ -2,7 +2,12 @@
 
 도시 이름을 입력하면 OpenWeatherMap의 현재 날씨(온도, 습도, 날씨 아이콘 등)를 보여줍니다.
 
-## 실행
+## 터미널 없이 실행
+
+`standalone/index.html`을 내려받아 더블클릭하면 브라우저에서 바로 열립니다. 목업 데이터로 동작합니다.
+(React와 앱 코드가 모두 들어 있는 단일 파일이며, `npm run build:single`로 다시 만들 수 있습니다.)
+
+## 실행 (개발 모드)
 
 ```bash
 npm install
