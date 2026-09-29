@@ -1,0 +1,172 @@
+:root {
+  --bg: #eef2f7;
+  --card: #ffffff;
+  --text: #1b1f24;
+  --muted: #5c6773;
+  --line: #e3e7ec;
+  --accent: #2f6fed;
+  --accent-soft: #e6eefe;
+  --error: #c8322f;
+  --error-soft: #fde8e7;
+  --shadow: 0 10px 30px rgba(20, 30, 50, 0.1), 0 2px 6px rgba(20, 30, 50, 0.06);
+
+  color-scheme: light dark;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1216;
+    --card: #1a1f26;
+    --text: #e8ecf1;
+    --muted: #9aa5b1;
+    --line: #2a313a;
+    --accent: #7aa2ff;
+    --accent-soft: #232d42;
+    --error: #ff7b72;
+    --error-soft: #3a1d1c;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+h1 { font-size: 28px; letter-spacing: -0.02em; margin-bottom: 20px; }
+
+/* ---------- 검색 ---------- */
+.search { display: flex; gap: 8px; }
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  font: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search input:focus { border-color: var(--accent); }
+.search button {
+  padding: 0 20px;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.search button:disabled { opacity: 0.4; cursor: default; }
+
+/* ---------- 목업 안내 ---------- */
+.mock-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.mock-note span { color: var(--muted); margin-right: 4px; }
+.mock-note button {
+  padding: 4px 10px;
+  font: inherit;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.mock-note button:disabled { opacity: 0.5; cursor: default; }
+
+/* ---------- 결과 영역 ---------- */
+.result { margin-top: 24px; min-height: 320px; }
+
+.empty, .error, .loading {
+  padding: 32px 16px;
+  text-align: center;
+  border-radius: 16px;
+}
+.empty { color: var(--muted); border: 1.5px dashed var(--line); }
+.error { color: var(--error); background: var(--error-soft); }
+
+.loading { color: var(--muted); }
+.spinner {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 12px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- 날씨 카드 ---------- */
+.weather-card {
+  padding: 28px 24px 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  animation: fade-in 0.3s ease;
+}
+@keyframes fade-in { from { opacity: 0; transform: translateY(6px); } }
+
+.weather-card header { display: flex; align-items: baseline; gap: 8px; }
+.weather-card h2 { font-size: 22px; }
+.weather-card .country {
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.weather-card .main { display: flex; align-items: center; gap: 8px; margin: 12px 0 20px; }
+.weather-card img,
+.weather-card .icon-fallback {
+  flex: none;
+  width: 100px;
+  height: 100px;
+  display: grid;
+  place-items: center;
+  font-size: 52px;
+  background: var(--accent-soft);
+  border-radius: 50%;
+}
+.weather-card .temp { font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+.weather-card .desc { margin-top: 6px; color: var(--muted); }
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stats > div {
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+.stats dt { font-size: 12px; color: var(--muted); }
+.stats dd { margin-top: 4px; font-size: 17px; font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0s !important; transition: none !important; }
+  .spinner { animation: spin 1.6s linear infinite !important; }
+}
