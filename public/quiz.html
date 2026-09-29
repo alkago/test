@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>상식 퀴즈</title>
+  <style>
+    :root {
+      --bg: #eef1f5;
+      --card: #ffffff;
+      --text: #1b1f24;
+      --muted: #5c6773;
+      --line: #e3e7ec;
+      --accent: #2f6fed;
+      --accent-soft: #e6eefe;
+      --ok: #1a7f4b;
+      --ok-soft: #e3f5ea;
+      --bad: #c8322f;
+      --bad-soft: #fde8e7;
+      --shadow: 0 10px 30px rgba(20, 30, 50, 0.10), 0 2px 6px rgba(20, 30, 50, 0.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1216;
+        --card: #1a1f26;
+        --text: #e8ecf1;
+        --muted: #9aa5b1;
+        --line: #2a313a;
+        --accent: #7aa2ff;
+        --accent-soft: #232d42;
+        --ok: #4cc585;
+        --ok-soft: #173326;
+        --bad: #ff7b72;
+        --bad-soft: #3a1d1c;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 560px;
+      padding: 32px 28px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .hidden { display: none !important; }
+
+    h1 { font-size: 26px; letter-spacing: -0.02em; }
+    .sub { margin-top: 8px; color: var(--muted); line-height: 1.6; }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 22px;
+      font: inherit;
+      font-weight: 600;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+    .btn.ghost { color: var(--accent); background: var(--accent-soft); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+
+    /* ---------- 상단: 진행률 + 점수 ---------- */
+    .hud { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
+    .hud strong { color: var(--text); }
+    .progress { height: 8px; margin: 10px 0 24px; background: var(--line); border-radius: 999px; overflow: hidden; }
+    .progress > div { height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width 0.35s ease; }
+
+    .question { font-size: 20px; font-weight: 700; line-height: 1.5; }
+
+    /* ---------- 보기 ---------- */
+    .options { display: grid; gap: 10px; margin-top: 20px; }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 16px;
+      font: inherit;
+      text-align: left;
+      color: var(--text);
+      background: transparent;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .option:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+    .option:disabled { cursor: default; }
+    .option .num {
+      flex: none;
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      border: 1.5px solid var(--line);
+      border-radius: 50%;
+    }
+    .option.correct { border-color: var(--ok); background: var(--ok-soft); }
+    .option.correct .num { color: #fff; background: var(--ok); border-color: var(--ok); }
+    .option.wrong { border-color: var(--bad); background: var(--bad-soft); }
+    .option.wrong .num { color: #fff; background: var(--bad); border-color: var(--bad); }
+    .option.dim { opacity: 0.5; }
+
+    /* ---------- 피드백 ---------- */
+    .feedback {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      line-height: 1.6;
+      font-size: 15px;
+      animation: pop 0.25s ease;
+    }
+    .feedback.ok { background: var(--ok-soft); }
+    .feedback.bad { background: var(--bad-soft); }
+    .feedback b { display: block; margin-bottom: 2px; }
+    .feedback.ok b { color: var(--ok); }
+    .feedback.bad b { color: var(--bad); }
+    @keyframes pop { from { transform: scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .card.shake { animation: shake 0.35s; }
+    @keyframes shake {
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* ---------- 결과 ---------- */
+    .result-top { text-align: center; }
+    .grade {
+      width: 120px;
+      height: 120px;
+      margin: 8px auto 16px;
+      display: grid;
+      place-items: center;
+      font-size: 56px;
+      font-weight: 800;
+      color: #fff;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #9b6cff);
+    }
+    .score-big { font-size: 22px; font-weight: 700; }
+    .comment { margin-top: 6px; color: var(--muted); }
+
+    .review { margin-top: 24px; display: grid; gap: 12px; }
+    .review-item { padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+    .review-item .q { font-weight: 700; line-height: 1.5; }
+    .review-item .row { margin-top: 8px; font-size: 14px; line-height: 1.6; }
+    .review-item .mine { color: var(--bad); }
+    .review-item .ans { color: var(--ok); font-weight: 600; }
+    .review-item .exp { margin-top: 8px; font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .perfect { margin-top: 24px; text-align: center; color: var(--ok); font-weight: 600; }
+
+    .hint { margin-top: 16px; font-size: 12px; color: var(--muted); text-align: center; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card" id="card">
+
+    <!-- 시작 화면 -->
+    <section id="start">
+      <h1>🧠 상식 퀴즈</h1>
+      <p class="sub">4지선다 10문제입니다. 문제 순서는 매번 섞입니다.<br>다 풀면 등급과 틀린 문제를 확인할 수 있어요.</p>
+      <div class="actions"><button class="btn" id="startBtn">시작하기</button></div>
+    </section>
+
+    <!-- 문제 화면 -->
+    <section id="quiz" class="hidden">
+      <div class="hud">
+        <span>문제 <strong id="qNum">1</strong> / <span id="qTotal">10</span></span>
+        <span>점수 <strong id="score">0</strong></span>
+      </div>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" id="progress">
+        <div id="bar"></div>
+      </div>
+
+      <h2 class="question" id="question"></h2>
+      <div class="options" id="options"></div>
+      <div id="feedback" aria-live="polite"></div>
+
+      <div class="actions"><button class="btn" id="nextBtn" disabled>다음 문제</button></div>
+      <p class="hint">키보드 1~4로 선택, Enter로 다음</p>
+    </section>
+
+    <!-- 결과 화면 -->
+    <section id="result" class="hidden">
+      <div class="result-top">
+        <div class="grade" id="grade">A</div>
+        <p class="score-big" id="finalScore"></p>
+        <p class="comment" id="comment"></p>
+      </div>
+      <div class="actions" style="justify-content:center">
+        <button class="btn ghost" id="reviewBtn">틀린 문제 다시 보기</button>
+        <button class="btn" id="retryBtn">다시 도전</button>
+      </div>
+      <div id="review" class="hidden"></div>
+    </section>
+
+  </main>
+
+  <script>
+    const QUESTIONS = [
+      { q: "태양계에서 가장 큰 행성은?", options: ["토성", "목성", "천왕성", "해왕성"], answer: 1,
+        exp: "목성은 지름이 지구의 약 11배로, 태양계 행성 중 가장 큽니다." },
+      { q: "물의 화학식은?", options: ["CO₂", "O₂", "H₂O", "NaCl"], answer: 2,
+        exp: "물은 수소 원자 2개와 산소 원자 1개로 이루어진 H₂O입니다." },
+      { q: "훈민정음(한글)을 창제한 조선의 왕은?", options: ["태조", "세종", "정조", "영조"], answer: 1,
+        exp: "세종대왕이 창제했고, 1446년에 반포되었습니다." },
+      { q: "세계에서 가장 넓은 대양은?", options: ["대서양", "인도양", "북극해", "태평양"], answer: 3,
+        exp: "태평양은 지구 표면의 약 3분의 1을 차지하는 가장 넓은 대양입니다." },
+      { q: "'모나리자'를 그린 화가는?", options: ["레오나르도 다 빈치", "미켈란젤로", "라파엘로", "빈센트 반 고흐"], answer: 0,
+        exp: "르네상스 시대의 레오나르도 다 빈치가 그렸으며, 파리 루브르 박물관에 있습니다." },
+      { q: "세계에서 해발고도가 가장 높은 산은?", options: ["K2", "킬리만자로", "에베레스트", "몽블랑"], answer: 2,
+        exp: "히말라야 산맥의 에베레스트산이 해발 약 8,849m로 가장 높습니다." },
+      { q: "다음 중 빛의 삼원색이 아닌 것은?", options: ["빨강", "초록", "파랑", "노랑"], answer: 3,
+        exp: "빛의 삼원색은 빨강(R)·초록(G)·파랑(B)입니다. 노랑은 색의 삼원색(CMY)에 속합니다." },
+      { q: "호주의 수도는?", options: ["시드니", "멜버른", "캔버라", "브리즈번"], answer: 2,
+        exp: "가장 큰 도시는 시드니지만, 수도는 계획도시인 캔버라입니다." },
+      { q: "사람 몸에서 가장 큰 기관(장기)은?", options: ["간", "피부", "폐", "뇌"], answer: 1,
+        exp: "피부는 면적과 무게 모두 인체에서 가장 큰 기관입니다. 내장 기관 중에서는 간이 가장 큽니다." },
+      { q: "올림픽 오륜기의 고리는 모두 몇 개일까?", options: ["4개", "5개", "6개", "7개"], answer: 1,
+        exp: "다섯 개의 고리는 다섯 대륙의 화합을 상징합니다." },
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const GRADES = [
+      { min: 10, grade: "S", comment: "완벽해요! 걸어 다니는 백과사전 📚" },
+      { min: 8,  grade: "A", comment: "훌륭해요! 상식 수준이 상위권이에요 👏" },
+      { min: 6,  grade: "B", comment: "좋아요! 조금만 더 하면 A등급 💪" },
+      { min: 4,  grade: "C", comment: "나쁘지 않아요. 틀린 문제를 복습해 보세요 🙂" },
+      { min: 0,  grade: "D", comment: "괜찮아요, 다시 도전하면 금방 올라가요 🔄" },
+    ];
+
+    let order = [];      // 섞인 문제 순서
+    let current = 0;     // 현재 문제 인덱스 (order 기준)
+    let score = 0;
+    let answered = false;
+    let wrongs = [];     // { item, picked }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function show(section) {
+      ["start", "quiz", "result"].forEach((id) => $(id).classList.toggle("hidden", id !== section));
+    }
+
+    function startGame() {
+      order = shuffle(QUESTIONS);
+      current = 0;
+      score = 0;
+      wrongs = [];
+      $("qTotal").textContent = order.length;
+      $("review").classList.add("hidden");
+      $("reviewBtn").textContent = "틀린 문제 다시 보기";
+      show("quiz");
+      renderQuestion();
+    }
+
+    function updateHud() {
+      const done = current + (answered ? 1 : 0);
+      $("qNum").textContent = current + 1;
+      $("score").textContent = score;
+      $("bar").style.width = (done / order.length) * 100 + "%";
+      $("progress").setAttribute("aria-valuenow", done);
+    }
+
+    function renderQuestion() {
+      const item = order[current];
+      answered = false;
+      $("question").textContent = `Q${current + 1}. ${item.q}`;
+      $("feedback").innerHTML = "";
+      $("nextBtn").disabled = true;
+      $("nextBtn").textContent = current === order.length - 1 ? "결과 보기" : "다음 문제";
+
+      const box = $("options");
+      box.innerHTML = "";
+      item.options.forEach((text, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerHTML = `<span class="num">${i + 1}</span><span></span>`;
+        btn.lastChild.textContent = text;
+        btn.addEventListener("click", () => choose(i));
+        box.appendChild(btn);
+      });
+      updateHud();
+    }
+
+    function choose(picked) {
+      if (answered) return;
+      answered = true;
+      const item = order[current];
+      const correct = picked === item.answer;
+      const buttons = $("options").children;
+
+      [...buttons].forEach((b, i) => {
+        b.disabled = true;
+        if (i === item.answer) b.classList.add("correct");
+        else if (i === picked) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+
+      const fb = document.createElement("div");
+      fb.className = "feedback " + (correct ? "ok" : "bad");
+      fb.innerHTML = `<b>${correct ? "⭕ 정답입니다!" : "❌ 오답입니다"}</b><span></span>`;
+      fb.lastChild.textContent = correct ? item.exp : `정답: ${item.options[item.answer]} — ${item.exp}`;
+      $("feedback").appendChild(fb);
+
+      if (correct) {
+        score++;
+      } else {
+        wrongs.push({ item, picked });
+        const card = $("card");
+        card.classList.remove("shake");
+        void card.offsetWidth; // 애니메이션 재시작
+        card.classList.add("shake");
+      }
+
+      updateHud();
+      $("nextBtn").disabled = false;
+      $("nextBtn").focus();
+    }
+
+    function next() {
+      if (!answered) return;
+      if (current < order.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      const g = GRADES.find((x) => score >= x.min);
+      $("grade").textContent = g.grade;
+      $("finalScore").textContent = `${order.length}문제 중 ${score}문제 정답 (${score * 10}점)`;
+      $("comment").textContent = g.comment;
+      $("reviewBtn").disabled = false;
+      show("result");
+    }
+
+    function toggleReview() {
+      const box = $("review");
+      const opening = box.classList.contains("hidden");
+      box.classList.toggle("hidden");
+      $("reviewBtn").textContent = opening ? "오답 노트 닫기" : "틀린 문제 다시 보기";
+      if (!opening) return;
+
+      box.innerHTML = "";
+      if (wrongs.length === 0) {
+        box.innerHTML = `<p class="perfect">🎉 틀린 문제가 없어요!</p>`;
+        return;
+      }
+      const list = document.createElement("div");
+      list.className = "review";
+      wrongs.forEach(({ item, picked }) => {
+        const el = document.createElement("div");
+        el.className = "review-item";
+        el.innerHTML = `
+          <p class="q"></p>
+          <p class="row">내 답: <span class="mine"></span></p>
+          <p class="row">정답: <span class="ans"></span></p>
+          <p class="exp"></p>`;
+        el.querySelector(".q").textContent = item.q;
+        el.querySelector(".mine").textContent = item.options[picked];
+        el.querySelector(".ans").textContent = item.options[item.answer];
+        el.querySelector(".exp").textContent = "💡 " + item.exp;
+        list.appendChild(el);
+      });
+      box.appendChild(list);
+    }
+
+    $("startBtn").addEventListener("click", startGame);
+    $("nextBtn").addEventListener("click", next);
+    $("retryBtn").addEventListener("click", startGame);
+    $("reviewBtn").addEventListener("click", toggleReview);
+
+    // 키보드: 1~4 선택, Enter 다음 문제
+    document.addEventListener("keydown", (e) => {
+      if ($("quiz").classList.contains("hidden")) return;
+      const n = Number(e.key);
+      if (n >= 1 && n <= 4 && !answered) choose(n - 1);
+      else if (e.key === "Enter" && answered && document.activeElement !== $("nextBtn")) next();
+    });
+  </script>
+</body>
+</html>
