@@ -74,5 +74,6 @@ draft: true           # optional; hidden in production builds only
 
 - **Don't use CSS attribute selectors whose value contains a space**, e.g. `[data-theme*=" "]`. Next's bundled cssnano crashes on them during `build`. Target `[data-rehype-pretty-code-figure]` instead.
 - **Don't add `next/font/google`.** Fonts are a system stack with Korean fallbacks in `globals.css`. Google fonts need network access at build time, and Geist has no Hangul glyphs.
-- **Set `NEXT_PUBLIC_SITE_URL` in the deploy environment.** RSS, the sitemap, and OG URLs are built from it and fall back to `http://localhost:3000`.
+- **Site URL** (RSS, sitemap, OG) resolves `NEXT_PUBLIC_SITE_URL` → `https://$VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000` (`src/lib/site.ts`). `siteConfig` reads a non-public env var, so import it only from server code.
+- **Vercel:** no `vercel.json`; Root Directory must be `blog` (set in the dashboard).
 - **`draft` filtering depends on `NODE_ENV`.** Check draft behavior with `build` + `start`, not `dev`.

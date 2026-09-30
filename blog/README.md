@@ -38,4 +38,8 @@ draft: true              # dev에서만 노출, production 빌드에서 제외
 | `src/app/tags` | 태그 목록 / 태그별 글 목록 |
 | `src/app/rss.xml`, `sitemap.ts` | RSS, sitemap |
 
-배포 시 `NEXT_PUBLIC_SITE_URL`을 실제 도메인으로 설정하세요 (RSS·sitemap·OG의 절대 URL에 사용).
+## 배포 (Vercel)
+
+- `vercel.json` 불필요. Next.js는 자동 감지됩니다.
+- 프로젝트 설정에서 **Root Directory = `blog`** 지정 (레포 루트는 미사용 Rails 파일).
+- 사이트 절대 URL(RSS·sitemap·OG)은 `NEXT_PUBLIC_SITE_URL` → Vercel의 `VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000` 순으로 결정됩니다. 커스텀 도메인이 있으면 Vercel이 자동으로 잡으므로, 보통은 환경 변수를 따로 넣지 않아도 됩니다.
