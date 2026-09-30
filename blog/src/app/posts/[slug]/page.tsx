@@ -53,7 +53,7 @@ export default async function PostPage({ params }: Props) {
         )}
       </header>
       <div
-        className="prose prose-neutral max-w-none dark:prose-invert prose-pre:bg-transparent"
+        className="prose prose-neutral max-w-none dark:prose-invert prose-pre:bg-transparent prose-pre:text-foreground prose-code:before:content-none prose-code:after:content-none"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </article>
